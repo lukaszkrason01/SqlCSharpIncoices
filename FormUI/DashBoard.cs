@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,11 +15,11 @@ namespace FormUI
     public partial class DashBoard : Form
     {
         List<People> people = new List<People>();
+        int columnToSearch = 0;
+
         public DashBoard()
         {
             InitializeComponent();
-            peopleFoindListBox.DataSource = people;
-            peopleFoindListBox.DisplayMember = "FullInfo";
 
             DataAccess db = new DataAccess();
 
@@ -39,16 +40,14 @@ namespace FormUI
 
         private void update()
         {
-            peopleFoindListBox.DataSource = people;
-            peopleFoindListBox.DisplayMember = "FullInfo";
-
             listView1.Items.Clear();
-
+            if (people == null ) return;
 
             foreach (var item in people)
             {
                 ListViewItem lvi = new ListViewItem(item.data());
                 listView1.Items.Add(new ListViewItem(item.data()));
+                listView1.Tag = item;
             }
         }
 
@@ -56,28 +55,141 @@ namespace FormUI
         {
             DataAccess db = new DataAccess();
 
-            people = db.GetPeople(lasnNameTextBox.Text);
+            people = db.GetPeople(lasnNameTextBox.Text,columnToSearch);
             update();
         }
 
         private void insertRecordButton_Click(object sender, EventArgs e)
         {
-            DataAccess db = new DataAccess();
-            db.insertPerson(addFirstNameTextbox.Text,
-                addLastNameTextBox.Text, addEmailTextBox.Text, addPhoneTextBox.Text);
-            addFirstNameTextbox.Text = "";
-            addLastNameTextBox.Text = "";
-            addEmailTextBox.Text = "";
-            addPhoneTextBox.Text = "";
 
         }
 
         private void RTTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             DataAccess db = new DataAccess();
-
-            people = db.GetPeople(RTTextBox.Text);
+            if (RTTextBox.Text == "") people = db.GetPeople();
+            else people = db.GetPeople(RTTextBox.Text,columnToSearch);
             update();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            AddContractor form = new AddContractor();
+            form.FormClosed += NewProjectForm_FormClosed;
+            form.Show();
+        }
+
+        private void NewProjectForm_FormClosed(object sender, System.Windows.Forms.FormClosedEventArgs e)
+        {
+            ////will run when new form is closed
+            DataAccess db = new DataAccess();
+            people = db.GetPeople();
+            update();
+        }
+
+        private void SortingListView(object sender, ColumnClickEventArgs e)
+        {
+            columnToSearch = e.Column;
+            RTTextBox.Text = "";
+            DataAccess db = new DataAccess();
+            people = db.GetPeople();
+            update();
+            this.Text = e.Column.ToString();
+            /// <summary>
+            /// code from http://www.java2s.com/Tutorial/CSharp/0460__GUI-Windows-Forms/ListViewSorter.htm
+            /// </summary>
+            ListViewItemComparer sorter = listView1.ListViewItemSorter as ListViewItemComparer;
+
+            if (sorter == null)
+            {
+                sorter = new ListViewItemComparer(e.Column);
+                listView1.ListViewItemSorter = sorter;
+            }
+            else
+            {
+                sorter.Column = e.Column;
+            }
+
+            listView1.Sort();
+        }
+
+        private void ShowContractorButton_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void listView1_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+           
+        }
+    }
+
+    /// <summary>
+    /// code from http://www.java2s.com/Tutorial/CSharp/0460__GUI-Windows-Forms/ListViewSorter.htm
+    /// </summary>
+    public class ListViewItemComparer : IComparer
+    {
+        private int column;
+        private bool numeric = false;
+
+        public int Column
+        {
+            get { return column; }
+            set { column = value; }
+        }
+
+        public bool Numeric
+        {
+            get { return numeric; }
+            set { numeric = value; }
+        }
+
+        public ListViewItemComparer(int columnIndex)
+        {
+            Column = columnIndex;
+        }
+
+        public int Compare(object x, object y)
+        {
+            ListViewItem itemX = x as ListViewItem;
+            ListViewItem itemY = y as ListViewItem;
+
+            if (itemX == null && itemY == null)
+                return 0;
+            else if (itemX == null)
+                return -1;
+            else if (itemY == null)
+                return 1;
+
+            if (itemX == itemY) return 0;
+
+            if (Numeric)
+            {
+                decimal itemXVal, itemYVal;
+
+                if (!Decimal.TryParse(itemX.SubItems[Column].Text, out itemXVal))
+                {
+                    itemXVal = 0;
+                }
+                if (!Decimal.TryParse(itemY.SubItems[Column].Text, out itemYVal))
+                {
+                    itemYVal = 0;
+                }
+
+                return Decimal.Compare(itemXVal, itemYVal);
+            }
+            else
+            {
+                string itemXText = itemX.SubItems[Column].Text;
+                string itemYText = itemY.SubItems[Column].Text;
+
+                return String.Compare(itemXText, itemYText);
+            }
         }
     }
 }

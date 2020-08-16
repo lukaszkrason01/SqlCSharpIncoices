@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -9,14 +10,30 @@ using Dapper;
 
 namespace FormUI
 {
+    enum SortingBy
+    {
+        FirstName = 0,
+        Lastname = 1,
+    }
     class DataAccess
     {
-        public List<People> GetPeople(string lastName)
+        public List<People> GetPeople(string lastName,int c)
         {
             using (SqlConnection connection = new System.Data.SqlClient.SqlConnection(Helper.ConVal("SampleDB")))
             {
+                List<People> result =null;
                 connection.Open();
-                var result = connection.Query<People>("dbo.People_getByLastName @LastName" , new { LastName = lastName }).ToList();
+                switch (c)
+                {
+                    case 0:
+                        result = connection.Query<People>("dbo.People_getByFirstName @LastName", new { LastName = lastName }).ToList();
+                        break;
+                    case 1:
+                        result = connection.Query<People>("dbo.People_getByLastName @LastName", new { LastName = lastName }).ToList();
+                        break;
+                    default:
+                        break;
+                }
 
                 return result;  
             }
@@ -31,8 +48,6 @@ namespace FormUI
                 return result;
             }
         }
-
-
 
         public void insertPerson(string strFirstName, string strLastName, string strEmail, string strPhone)
         {
