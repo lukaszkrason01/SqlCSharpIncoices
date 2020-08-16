@@ -26,10 +26,13 @@ namespace FormUI
                 switch (c)
                 {
                     case 0:
-                        result = connection.Query<People>("dbo.People_getByFirstName @LastName", new { LastName = lastName }).ToList();
+                        result = connection.Query<People>("dbo.People_getByFirstName @FirstName", new { FirstName = lastName }).ToList();
                         break;
                     case 1:
                         result = connection.Query<People>("dbo.People_getByLastName @LastName", new { LastName = lastName }).ToList();
+                        break;
+                    case 3:
+                        result = connection.Query<People>("dbo.People_getByID @ID", new { ID = lastName }).ToList();
                         break;
                     default:
                         break;
@@ -38,6 +41,16 @@ namespace FormUI
                 return result;  
             }
         }
+
+        public void UpdateByID(People up)
+        {
+            using(SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
+            {
+                connection.Open();
+                connection.Execute("dbo.People_updateByID @ID,@FirstName, @LastName, @Email,@Phone", up);
+            }
+        }
+
         public List<People> GetPeople()
         {
             using (SqlConnection connection = new System.Data.SqlClient.SqlConnection(Helper.ConVal("SampleDB")))

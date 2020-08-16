@@ -41,13 +41,14 @@ namespace FormUI
         private void update()
         {
             listView1.Items.Clear();
-            if (people == null ) return;
+            if (people == null) return;
 
             foreach (var item in people)
             {
                 ListViewItem lvi = new ListViewItem(item.data());
-                listView1.Items.Add(new ListViewItem(item.data()));
-                listView1.Tag = item;
+                lvi.Tag = item;
+                listView1.Items.Add(lvi);
+
             }
         }
 
@@ -55,7 +56,7 @@ namespace FormUI
         {
             DataAccess db = new DataAccess();
 
-            people = db.GetPeople(lasnNameTextBox.Text,columnToSearch);
+            people = db.GetPeople(lasnNameTextBox.Text, columnToSearch);
             update();
         }
 
@@ -68,7 +69,7 @@ namespace FormUI
         {
             DataAccess db = new DataAccess();
             if (RTTextBox.Text == "") people = db.GetPeople();
-            else people = db.GetPeople(RTTextBox.Text,columnToSearch);
+            else people = db.GetPeople(RTTextBox.Text, columnToSearch);
             update();
         }
 
@@ -115,17 +116,40 @@ namespace FormUI
 
         private void ShowContractorButton_Click(object sender, EventArgs e)
         {
-           
+            showContractorForm();
+        }
+
+        private void showContractorForm()
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                People var3 = (People)listView1.SelectedItems[0].Tag;
+                ShowContractor form = new ShowContractor(var3.ID);
+                form.FormClosed += NewProjectForm_FormClosed;
+                form.Show();
+            }
         }
 
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
-
+            showContractorForm();
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-           
+
+        }
+
+        private void showMyData_Click(object sender, EventArgs e)
+        {
+            ShowContractor form = new ShowContractor(1);
+            form.FormClosed += NewProjectForm_FormClosed;
+            form.Show();
+        }
+
+        private void IssueInvoice_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
