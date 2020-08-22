@@ -1,10 +1,8 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing.Text;
 using System.Linq;
@@ -36,27 +34,29 @@ namespace FormUI
         {
             Company,
             Product,
-            Vatrate
+            Vatrate,
+            JM,
+            Invoice
         }
 
         private readonly static string database = Helper.ConVal("SampleDB");
 
-        protected List<Object[]> GetDataList(string procedure)
+        protected ICollection GetData (TABLE t, string procedure)
         {
             string[] ad = null;
-            return GetDataList(procedure, ad);
+            return GetData(t, procedure, ad);
         }
 
-        protected List<Object[]> GetDataList(string procedure, string condition)
+        protected ICollection GetData(TABLE t, string procedure, string condition)
         {
 
-            return GetDataList(procedure, new string[] { condition });
+            return GetData(t,procedure, new string[] { condition });
         }
 
-        protected static List<Object[]> GetDataList(string procedure,string[] conditions)
+        protected ICollection GetData(TABLE t,string procedure, string[] conditions)
         {
             string sql = procedure;
-            if (conditions != null)
+            if(conditions != null)
                 foreach (var item in conditions)
                 {
                     sql = sql + " '" + item + "'";
@@ -65,24 +65,27 @@ namespace FormUI
             using (SqlConnection connection = new SqlConnection(database))
             {
                 connection.Open();
-                List<Object[]> templist = new List<Object[]>();
-                using (SqlCommand command = new SqlCommand(sql, connection))
+
+                switch (t)
                 {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while(reader.Read())
-                        {
-                            Object[] values = new Object[reader.FieldCount];
-                            reader.GetValues(values);
-                            templist.Add(values);
-                        }
-                    }
+                    case TABLE.Company:
+                        return connection.Query<Company>(sql).ToList();
+                    case TABLE.Product:
+                        return connection.Query<Product>(sql).ToList();
+                    case TABLE.Vatrate:
+                        return MakeDictionaryVint(connection, sql);
+                    case TABLE.JM:
+                        return MakeDictionaryVstring(connection, sql);
+                    case TABLE.Invoice:
+                        return connection.Query<Invoice>(sql).ToList();
+                    default:
+                        break;
                 }
-                return templist;
+                return null;
             }
         }
-    
-        private IDictionary makeDictionary(SqlConnection connection,string procedure)
+
+        private IDictionary MakeDictionaryVint(SqlConnection connection,string procedure)
         {
             using (SqlCommand command = new SqlCommand(procedure, connection))
             {
@@ -97,47 +100,31 @@ namespace FormUI
                 return result;
             }
         }
-        protected void InsertData(TABLE t, IEntyty c , string procedure)
+
+        private IDictionary MakeDictionaryVstring(SqlConnection connection, string procedure)
         {
-            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
+            using (SqlCommand command = new SqlCommand(procedure, connection))
+            {
+                Dictionary<int, string> result = new Dictionary<int, string>();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(reader.GetInt32(0), reader.GetString(1)); 
+                    }
+                }
+                return result;
+            }
+        }
+        protected void ExecuteOnData(string procedure)
+        {
+            using (SqlConnection connection = new SqlConnection(database))
             {
                 connection.Open();
-                switch (t)
-                {
-                    case TABLE.Company:
-                        connection.Execute("dbo.Companies_insert @Name, @Street, @ZipCode, @City, @NIP"
-                            , (Company)c);
-                        break;
-                    case TABLE.Product:
-                        connection.Execute("dbo.Products_insert @Name,@Jm,@Vat,@Price"
-                            , (Product)c);
-                        break;
-                    default:
-                        break;
-                }
+                connection.Execute(procedure);
             }
         }
 
-        protected void UpdateData(TABLE t, IEntyty c)
-        {
-            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
-            {
-                connection.Open();
-                switch (t)
-                {
-                    case TABLE.Company:
-                        connection.Execute("dbo.Companies_updateByID @ID,@Name,@Street,@ZipCode,@City,@Nip"
-                            , (Company)c);
-                        break;
-                    case TABLE.Product:
-                        connection.Execute("dbo.Products_updateByID @ID,@Name,@Jm,@Vat,@Price"
-                            , (Product)c);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
     }
     class DBAccessVatRates: DBAccess
     {
@@ -145,7 +132,7 @@ namespace FormUI
 
         private Dictionary<int,int> GetVatrates(string procedure)
         {
-            return (Dictionary<int,int>)GetDataList(procedure);
+            return (Dictionary<int,int>)GetData(table, procedure);
         }
         public Dictionary<int,int> GetAll()
         {
@@ -153,6 +140,62 @@ namespace FormUI
         }
     }
 
+    class DbAccessJM : DBAccess
+    {
+        private readonly TABLE table = TABLE.JM;
+
+        private Dictionary<int,string> GetJMS(string procedure)
+        {
+            return (Dictionary<int, string>)GetData(table, procedure);
+        }
+        public Dictionary<int,string> GetAll(){
+            return GetJMS("dbo.jm_getAll");
+        }
+    }
+
+    class DBAccessInvoice : DBAccess
+    {
+        private readonly TABLE table = TABLE.Invoice;
+
+        private List<Invoice> GetInvoices(string procedure)
+        {
+            return (List<Invoice>)GetData(table, procedure);
+        }
+        private List<Invoice> GetInvoices(string procedure,string condition)
+        {
+            return (List<Invoice>)GetData(table, procedure,condition);
+        }
+
+        private List<Invoice> GetInvoices(string procedure, string[] conditions)
+        {
+            return (List<Invoice>)GetData(table, procedure, conditions);
+        }
+        public int GetInvoiceNumber()
+        {
+            using (SqlConnection connection = new SqlConnection(Helper.database))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("dbo.Invoices_getInvoiceNumber", connection))
+                {
+                    return (int)command.ExecuteScalar();
+                }
+            }
+        }
+
+        public List<Invoice> GetAll()
+        {
+            return GetInvoices("dbo.Invoices_getAll");
+        }
+        public List<Invoice> GetByID(int id)
+        {
+            return GetByID(id.ToString());
+        }
+
+        public List<Invoice> GetByID(string id)
+        {
+            return GetInvoices("dbo.Invoices_getByID", id);
+        }
+    }
     class DBAccesCompanies : DBAccess
     {
         private readonly TABLE table = TABLE.Company;
@@ -168,28 +211,27 @@ namespace FormUI
 
         private List<Company> GetCompanies(string procedure)
         {
-            return (List<Company>)GetDataList(procedure);
+            return (List<Company>)GetData(table,procedure);
         }
 
         private List<Company> GetCompanies(string procedure, string condition)
         {
-            List<Object[]> templist = GetDataList(procedure, condition);
-            Company c = new Company();
-            c = templist[0];
-            foreach (var item in templist)
-            {
-                
-            }
+            return (List<Company>)GetData(table, procedure, condition);
         }
 
         public void UpdateCompany(Company company)
         {
-            UpdateData(table, company);
+            string procedure = $"dbo.Companies_updateByID {company.ID},'{company.Name}', " +
+               $"'{company.Street}', '{company.ZipCode}', '{company.City}', '{company.NIP}'";
+            ExecuteOnData(procedure);
         }
 
         public void InsertCompany(Company newCompany)
         {
-            InsertData(table, newCompany,"");
+            string procedure = $"dbo.Companies_insert '{newCompany.Name}', " +
+                $"'{newCompany.Street}', '{newCompany.ZipCode}', '{newCompany.City}', '{newCompany.NIP}'";
+                           
+            ExecuteOnData(procedure);
         }
 
         public List<Company> GetAll()
@@ -273,22 +315,26 @@ namespace FormUI
 
         private List<Product> GetProducts(string procedure)
         {
-            return (List<Product>)GetDataList(procedure);
+            return (List<Product>)GetData(table, procedure);
         }
 
         private List<Product> GetProducts(string procedure, string condition)
         {
-            return (List<Product>)GetDataList(procedure, condition);
+            return (List<Product>)GetData(table, procedure, condition);
         }
 
         public void UpdateProduct(Product product)
         {
-            UpdateData(table, product);
+            string procedure = $"dbo.Products_updateByID {product.ID},'{product.Name}'," +
+                $"{product.Jm},{product.Vat},{product.Price.ToString(System.Globalization.CultureInfo.CreateSpecificCulture("en-GB"))}";
+            ExecuteOnData(procedure);
         }   
 
         public void InsertProduct(Product newProduct)
         {
-            InsertData(table, newProduct,"");
+            string procedure = $"dbo.Products_insert '{newProduct.Name}',{newProduct.Jm},{newProduct.Vat}" +
+                $",'{newProduct.Price}'";
+            ExecuteOnData(procedure);
         }
         public List<Product> GetAll()
         {
@@ -315,33 +361,6 @@ namespace FormUI
 
     static class DataAccessGetSmallTables
     {
-
-        public static string SelectJMByID(int id)
-        {
-            return GetDataByID("dbo.jm_get_ByID", id.ToString());
-        }
-
-        public static string SelectVatRateByID(int id)
-        {
-            return GetDataByID("dbo.vatrate_getByID", id.ToString());
-        }
-
-        private static dynamic GetDataByID(string procedure,string id)
-        {
-            string exec = procedure + " " + id;
-            using(SqlConnection connection = new SqlConnection(Helper.database))
-            {
-                connection.Open();
-
-
-                connection.Query(procedure);
-            }
-            return null;
-        }
-
-
-
-
         public static Dictionary<int, string> GetPaymentMethodS()
         {
             using (SqlConnection connection = new SqlConnection(Helper.ConVal("SAmpleDB")))
@@ -361,49 +380,13 @@ namespace FormUI
                 return result;
             }
         }
-
-        public static Dictionary<int, string> GetJMs()
-        {
-            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SAmpleDB")))
-            {
-                Dictionary<int, string> result = new Dictionary<int, string>();
-                connection.Open();
-                using (SqlCommand command = new SqlCommand("dbo.jm_getAll", connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-
-                        while (reader.Read())
-                        {
-                            result.Add(reader.GetInt32(0), reader.GetString(1));
-                        }
-                    }
-                }
-                return result;
-            }
-        }
+        
     }
 
 
 
-    class DataAccess
+    class DataAccesss
     {
-
-        public int GetInvoiceNumber()
-        {
-            using (SqlConnection connection = new SqlConnection(Helper.database))
-            {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand("dbo.Invoices_getInvoiceNumber",connection))
-                {
-                    return (int)command.ExecuteScalar();
-                }
-            }
-        }
-        
-
-
-
         public List<People> GetPeople(string lastName,int c)
         {
             using (SqlConnection connection = new System.Data.SqlClient.SqlConnection(Helper.ConVal("SampleDB")))
@@ -465,32 +448,6 @@ namespace FormUI
                 people.Add(newPerson);
 
                 connection.Execute("dbo.People_insert @FirstName, @LastName, @Email,@Phone", people); 
-            }
-        }
-
-        public List<Invoice> GetAllInvoices()
-        {
-            return GetInvoices(INVOICETABLE.GetAll,"");
-        }
-
-        public List<Invoice> GetInvoices(INVOICETABLE t , string condition)
-        {
-            using (SqlConnection connection = new System.Data.SqlClient.SqlConnection(Helper.ConVal("SampleDB")))
-            {
-                List<Invoice> result = null;
-                connection.Open();
-                switch (t)
-                {
-                    case INVOICETABLE.GetAll:
-                        result = connection.Query<Invoice>("dbo.Invoices_getAll").ToList();
-                        break;
-                    case INVOICETABLE.GetByID:
-                        result = connection.Query<Invoice>("dbo.Invoices_getByID @ID", new { ID = condition }).ToList();
-                        break;
-                    default:
-                        break;
-                }
-                return result;
             }
         }
     }
