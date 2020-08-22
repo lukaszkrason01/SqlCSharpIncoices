@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing.Text;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
@@ -32,29 +33,33 @@ namespace FormUI
         protected enum TABLE
         {
             Company,
-            Product
+            Product,
+            Vatrate
         }
 
         private readonly static string database = Helper.ConVal("SampleDB");
 
-        protected IList GetData (TABLE t, string procedure)
+        protected IList GetDataList (TABLE t, string procedure)
         {
-            return GetData(t, procedure, new string[] { "" });
+            string[] ad = null;
+            return GetDataList(t, procedure, ad);
         }
 
-        protected IList GetData(TABLE t, string procedure, string condition)
+        protected IList GetDataList(TABLE t, string procedure, string condition)
         {
 
-            return GetData(t,procedure, new string[] { condition });
+            return GetDataList(t,procedure, new string[] { condition });
         }
 
-        protected IList GetData(TABLE t,string procedure, string[] conditions)
+        protected IList GetDataList(TABLE t,string procedure, string[] conditions)
         {
             string sql = procedure;
-            foreach(var item in conditions)
-            {
-                sql = sql + " " + item;
-            }
+            if(conditions != null)
+                foreach (var item in conditions)
+                {
+                    sql = sql + " '" + item + "'";
+                }
+
             using (SqlConnection connection = new SqlConnection(database))
             {
                 connection.Open();
@@ -62,17 +67,84 @@ namespace FormUI
                 switch (t)
                 {
                     case TABLE.Company:
-                        List<Company> result = new List<Company>();
                         return connection.Query<Company>(sql).ToList();
                     case TABLE.Product:
+                        return connection.Query<Product>(sql).ToList();
+                    default:
+                        break;
+                }
+                return null;
+            }
+        }
+
+        private IDictionary makeDictionary(SqlConnection connection,string procedure)
+        {
+            using (SqlCommand command = new SqlCommand(procedure, connection))
+            {
+                Dictionary<int, int> result = new Dictionary<int, int>();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(reader.GetInt32(0), reader.GetInt32(1));
+                    }
+                }
+                return result;
+            }
+        }
+        protected void InsertData(TABLE t, IEntyty c , string procedure)
+        {
+            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
+            {
+                connection.Open();
+                switch (t)
+                {
+                    case TABLE.Company:
+                        connection.Execute("dbo.Companies_insert @Name, @Street, @ZipCode, @City, @NIP"
+                            , (Company)c);
+                        break;
+                    case TABLE.Product:
+                        connection.Execute("dbo.Products_insert @Name,@Jm,@Vat,@Price"
+                            , (Product)c);
                         break;
                     default:
                         break;
                 }
-
-                
-                return null;
             }
+        }
+
+        protected void UpdateData(TABLE t, IEntyty c)
+        {
+            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
+            {
+                connection.Open();
+                switch (t)
+                {
+                    case TABLE.Company:
+                        connection.Execute("dbo.Companies_updateByID @ID,@Name,@Street,@ZipCode,@City,@Nip"
+                            , (Company)c);
+                        break;
+                    case TABLE.Product:
+                        connection.Execute("dbo.Products_updateByID @ID,@Name,@Jm,@Vat,@Price"
+                            , (Product)c);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    class DBAccessVatRates: DBAccess
+    {
+        private readonly TABLE table = TABLE.Vatrate;
+
+        private Dictionary<int,int> GetVatrates(string procedure)
+        {
+            return (Dictionary<int,int>)GetDataList(table, procedure);
+        }
+        public Dictionary<int,int> GetAll()
+        {
+            return GetVatrates("dbo.vatrate_getAll");
         }
     }
 
@@ -91,12 +163,22 @@ namespace FormUI
 
         private List<Company> GetCompanies(string procedure)
         {
-            return (List<Company>)GetData(table,procedure);
+            return (List<Company>)GetDataList(table,procedure);
         }
 
         private List<Company> GetCompanies(string procedure, string condition)
         {
-            return (List<Company>)GetData(table, procedure, condition);
+            return (List<Company>)GetDataList(table, procedure, condition);
+        }
+
+        public void UpdateCompany(Company company)
+        {
+            UpdateData(table, company);
+        }
+
+        public void InsertCompany(Company newCompany)
+        {
+            InsertData(table, newCompany);
         }
 
         public List<Company> GetAll()
@@ -108,7 +190,7 @@ namespace FormUI
             return GetCompanies("dbo.Companies_getByID", id)[0];
         }
 
-        public Company SelectByID(int id)
+        public Company GetByID(int id)
         {
             return GetByID(id.ToString());
         }
@@ -169,162 +251,56 @@ namespace FormUI
         }
     }
 
-    public static class DataAccessGetCompanies
+    class DBAccessProduct :DBAccess
     {
+        private readonly TABLE table = TABLE.Product;
         private enum GETMETHOD
         {
-            All = -1,
-            ByID = 0,
-            ByName = 1,
-            ByStreet = 2,
-            ByZipCode = 3,
-            ByCity = 4,
-            ByNip = 5
-        }
-
-        public static Company SelectByID(string id)
-        {
-            return getCompanies(GETMETHOD.ByID, id )[0];
-        }
-
-        public static Company SelectByID(int id)
-        {
-            return SelectByID(id.ToString());
-        }
-
-        public static List<Company> SelectByName(string name)
-        {
-            return getCompanies(GETMETHOD.ByName,  name);
-        }
-
-        public static List<Company> SelectByStreet(string street)
-        {
-            return getCompanies(GETMETHOD.ByStreet, street);
-        }
-
-        public static List<Company> SelectByCity(string city)
-        {
-            return getCompanies(GETMETHOD.ByCity,city );
-        }
-        public static List<Company> SelectByZipCode(string zipcode)
-        {
-            return getCompanies(GETMETHOD.ByZipCode,  zipcode );
-        }
-        public static List<Company> selectByNip(string nip)
-        {
-            return getCompanies(GETMETHOD.ByNip, nip);
-        }
-
-        public static List<Company> selectByColumnNumber(int column,string condition)
-        {
-            GETMETHOD t = (GETMETHOD)column;
-            return getCompanies(t, condition);
-        }
-        private static List<Company> getCompanies(GETMETHOD t, string condition)
-        {
-            return getCompanies(t, new string[] { condition });
-        }
-
-        private static List<Company> getCompanies(GETMETHOD t, string[] condition)
-        {
-            using (SqlConnection connection = new SqlConnection(Helper.database))
-            {
-                List<Company> result = new List<Company>();
-                connection.Open();
-                switch (t)
-                {
-                    case GETMETHOD.All:
-                        result = connection.Query<Company>("dbo.Companies_getAll").ToList();
-                        break;
-                    case GETMETHOD.ByID:
-                        result = connection.Query<Company>("dbo.Companies_getByID @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    case GETMETHOD.ByName:
-                        result = connection.Query<Company>("dbo.Companies_getByName @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    case GETMETHOD.ByStreet:
-                        result = connection.Query<Company>("dbo.Companies_getByStreet @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    case GETMETHOD.ByZipCode:
-                        result = connection.Query<Company>("dbo.Companies_getByZipCode @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    case GETMETHOD.ByCity:
-                        result = connection.Query<Company>("dbo.Companies_getByCity @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    case GETMETHOD.ByNip:
-                        result = connection.Query<Company>("dbo.Companies_getByNip @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    default:
-                        break;
-                }
-                return result;
-            }
-        }
-    }
-
-    public static class DataAccessGetProducts
-    {
-        enum GETMETHOD
-        {
-            All = -1,
             ByID = 0,
             ByName = 1,
         }
-        public static List<Product> SelectAll()
+
+        private List<Product> GetProducts(string procedure)
         {
-            return GetProducts(GETMETHOD.All, "");
+            return (List<Product>)GetDataList(table, procedure);
         }
 
-        public static Product SelectByID(string id)
+        private List<Product> GetProducts(string procedure, string condition)
         {
-            return GetProducts(GETMETHOD.ByID, id)[0];
+            return (List<Product>)GetDataList(table, procedure, condition);
         }
 
-        public static Product SelectByID(int id)
+        public void UpdateProduct(Product product)
         {
-            return SelectByID(id.ToString());
+            UpdateData(table, product);
+        }   
+
+        public void InsertProduct(Product newProduct)
+        {
+            InsertData(table, newProduct);
         }
-        public static List<Product> SelectByName(string name)
+        public List<Product> GetAll()
         {
-            return GetProducts(GETMETHOD.ByName, name);
+            return GetProducts("dbo.Products_getAll");
         }
 
-        private static List<Product> GetProducts(GETMETHOD t, string condition)
+        public Product GetByID(string id)
         {
-            return GetProducts(t, new string[] { condition });
+            return GetProducts("dbo.Products_getByID", id)[0];
         }
-        private static List<Product> GetProducts(GETMETHOD t, string[] condition)
+
+        public Product GetByID(int id)
         {
-            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDb")))
-            {
-                connection.Open();
-                List<Product> result = null;
-                switch (t)
-                {
-                    case GETMETHOD.All:
-                        result = connection.Query<Product>("dbo.Products_getAll").ToList();
-                        break;
-                    case GETMETHOD.ByID:
-                        result = connection.Query<Product>("dbo.Products_getByID @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    case GETMETHOD.ByName:
-                        result = connection.Query<Product>("dbo.Products_getByName @c"
-                            , new { c = condition[0] }).ToList();
-                        break;
-                    default:
-                        break;
-                }
-                return result;
-            }
+            return GetByID(id.ToString());
+        }
+        public List<Product> GetByName(string name)
+        {
+            return GetProducts("dbo.Products_getByName", name);
         }
     }
+
+
+
 
     static class DataAccessGetSmallTables
     {
@@ -374,25 +350,7 @@ namespace FormUI
                 return result;
             }
         }
-        public static Dictionary<int, int> GetVatRates()
-        {
-            using (SqlConnection connection = new SqlConnection(Helper.ConVal("SAmpleDB")))
-            {
-                Dictionary<int, int> result = new Dictionary<int, int>();
-                connection.Open();
-                using (SqlCommand command = new SqlCommand("dbo.vatrate_getAll", connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            result.Add(reader.GetInt32(0), reader.GetInt32(1));
-                        }
-                    }
-                }
-                return result;
-            }
-        }
+
         public static Dictionary<int, string> GetJMs()
         {
             using (SqlConnection connection = new SqlConnection(Helper.ConVal("SAmpleDB")))
@@ -432,46 +390,9 @@ namespace FormUI
             }
         }
         
-        public void InsertData(TABLES t,IEntyty c)
-        {
-            using(SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
-            {
-                connection.Open();
-                switch (t)
-                {
-                    case TABLES.Company:
-                        connection.Execute("dbo.Companies_insert @Name, @Street, @ZipCode, @City, @NIP", (Company) c);
-                        break;
-                    case TABLES.Product:
-                        connection.Execute("dbo.Products_insert @Name,@Jm,@Vat,@Price"
-                            , (Product)c);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
 
-        public void UpdateData(TABLES t, IEntyty c)
-        {
-            using(SqlConnection connection = new SqlConnection(Helper.ConVal("SampleDB")))
-            {
-                connection.Open();
-                switch (t)
-                {
-                    case TABLES.Company:
-                        connection.Execute("dbo.Companies_updateByID @ID,@Name,@Street,@ZipCode,@City,@Nip"
-                            ,(Company)c);
-                        break;
-                    case TABLES.Product:
-                        connection.Execute("dbo.Products_updateByID @ID,@Name,@Jm,@Vat,@Price"
-                            , (Product)c);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+
+
         public List<People> GetPeople(string lastName,int c)
         {
             using (SqlConnection connection = new System.Data.SqlClient.SqlConnection(Helper.ConVal("SampleDB")))

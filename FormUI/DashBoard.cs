@@ -64,7 +64,7 @@ namespace FormUI
 
         private void search_Click(object sender, EventArgs e)
         {
-            Companies = DataAccessGetCompanies.selectByColumnNumber(column,  lasnNameTextBox.Text);
+            Companies = new DBAccesCompanies().GetByColumnNumber(column,  lasnNameTextBox.Text);
             update();
         }
 
@@ -77,7 +77,7 @@ namespace FormUI
         {
 
             if (RTTextBox.Text == "") Companies = new DBAccesCompanies().GetAll();
-            else Companies = DataAccessGetCompanies.selectByColumnNumber(column, RTTextBox.Text);
+            else Companies = new DBAccesCompanies().GetByColumnNumber(column, RTTextBox.Text);
             update();
         }
 
