@@ -190,5 +190,27 @@ namespace FormUI
         {
 
         }
+
+        private void tabelaVATToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            using (SqlConnection connection = new SqlConnection(Helper.database))
+            {
+                connection.Open();
+                List<object[]> templist = new List<object[]>();
+                using (SqlCommand command = new SqlCommand("dbo.Companies_getAll", connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Object[] values = new Object[reader.FieldCount];
+                            reader.GetValues(values);
+                            templist.Add(values);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -240,13 +240,13 @@
             // AddInvoide
             // 
             this.AddInvoide.Name = "AddInvoide";
-            this.AddInvoide.Size = new System.Drawing.Size(180, 22);
+            this.AddInvoide.Size = new System.Drawing.Size(170, 22);
             this.AddInvoide.Text = "Dodaj Fakturę";
             // 
             // showIvnoice
             // 
             this.showIvnoice.Name = "showIvnoice";
-            this.showIvnoice.Size = new System.Drawing.Size(180, 22);
+            this.showIvnoice.Size = new System.Drawing.Size(170, 22);
             this.showIvnoice.Text = "Przeglądaj Faktury";
             this.showIvnoice.Click += new System.EventHandler(this.showIvnoice_Click);
             // 
@@ -262,14 +262,14 @@
             // AddProcutToolStripMenuItem1
             // 
             this.AddProcutToolStripMenuItem1.Name = "AddProcutToolStripMenuItem1";
-            this.AddProcutToolStripMenuItem1.Size = new System.Drawing.Size(128, 22);
+            this.AddProcutToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.AddProcutToolStripMenuItem1.Text = "Dodaj";
             this.AddProcutToolStripMenuItem1.Click += new System.EventHandler(this.AddProductToolStripMenuItem1_Click);
             // 
             // przegladajToolStripMenuItem1
             // 
             this.przegladajToolStripMenuItem1.Name = "przegladajToolStripMenuItem1";
-            this.przegladajToolStripMenuItem1.Size = new System.Drawing.Size(128, 22);
+            this.przegladajToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.przegladajToolStripMenuItem1.Text = "Przegladaj";
             this.przegladajToolStripMenuItem1.Click += new System.EventHandler(this.przegladajToolStripMenuItem1_Click);
             // 
@@ -285,13 +285,14 @@
             // tabelaVATToolStripMenuItem
             // 
             this.tabelaVATToolStripMenuItem.Name = "tabelaVATToolStripMenuItem";
-            this.tabelaVATToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.tabelaVATToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.tabelaVATToolStripMenuItem.Text = "Tabela VAT";
+            this.tabelaVATToolStripMenuItem.Click += new System.EventHandler(this.tabelaVATToolStripMenuItem_Click);
             // 
             // jednostkiMiaryToolStripMenuItem
             // 
             this.jednostkiMiaryToolStripMenuItem.Name = "jednostkiMiaryToolStripMenuItem";
-            this.jednostkiMiaryToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.jednostkiMiaryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.jednostkiMiaryToolStripMenuItem.Text = "Jednostki miary";
             // 
             // DashBoard

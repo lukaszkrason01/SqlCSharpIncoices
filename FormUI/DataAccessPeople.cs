@@ -1,8 +1,10 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing.Text;
 using System.Linq;
@@ -39,22 +41,22 @@ namespace FormUI
 
         private readonly static string database = Helper.ConVal("SampleDB");
 
-        protected IList GetDataList (TABLE t, string procedure)
+        protected List<Object[]> GetDataList(string procedure)
         {
             string[] ad = null;
-            return GetDataList(t, procedure, ad);
+            return GetDataList(procedure, ad);
         }
 
-        protected IList GetDataList(TABLE t, string procedure, string condition)
+        protected List<Object[]> GetDataList(string procedure, string condition)
         {
 
-            return GetDataList(t,procedure, new string[] { condition });
+            return GetDataList(procedure, new string[] { condition });
         }
 
-        protected IList GetDataList(TABLE t,string procedure, string[] conditions)
+        protected static List<Object[]> GetDataList(string procedure,string[] conditions)
         {
             string sql = procedure;
-            if(conditions != null)
+            if (conditions != null)
                 foreach (var item in conditions)
                 {
                     sql = sql + " '" + item + "'";
@@ -63,20 +65,23 @@ namespace FormUI
             using (SqlConnection connection = new SqlConnection(database))
             {
                 connection.Open();
-
-                switch (t)
+                List<Object[]> templist = new List<Object[]>();
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    case TABLE.Company:
-                        return connection.Query<Company>(sql).ToList();
-                    case TABLE.Product:
-                        return connection.Query<Product>(sql).ToList();
-                    default:
-                        break;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            Object[] values = new Object[reader.FieldCount];
+                            reader.GetValues(values);
+                            templist.Add(values);
+                        }
+                    }
                 }
-                return null;
+                return templist;
             }
         }
-
+    
         private IDictionary makeDictionary(SqlConnection connection,string procedure)
         {
             using (SqlCommand command = new SqlCommand(procedure, connection))
@@ -140,7 +145,7 @@ namespace FormUI
 
         private Dictionary<int,int> GetVatrates(string procedure)
         {
-            return (Dictionary<int,int>)GetDataList(table, procedure);
+            return (Dictionary<int,int>)GetDataList(procedure);
         }
         public Dictionary<int,int> GetAll()
         {
@@ -163,12 +168,18 @@ namespace FormUI
 
         private List<Company> GetCompanies(string procedure)
         {
-            return (List<Company>)GetDataList(table,procedure);
+            return (List<Company>)GetDataList(procedure);
         }
 
         private List<Company> GetCompanies(string procedure, string condition)
         {
-            return (List<Company>)GetDataList(table, procedure, condition);
+            List<Object[]> templist = GetDataList(procedure, condition);
+            Company c = new Company();
+            c = templist[0];
+            foreach (var item in templist)
+            {
+                
+            }
         }
 
         public void UpdateCompany(Company company)
@@ -178,7 +189,7 @@ namespace FormUI
 
         public void InsertCompany(Company newCompany)
         {
-            InsertData(table, newCompany);
+            InsertData(table, newCompany,"");
         }
 
         public List<Company> GetAll()
@@ -262,12 +273,12 @@ namespace FormUI
 
         private List<Product> GetProducts(string procedure)
         {
-            return (List<Product>)GetDataList(table, procedure);
+            return (List<Product>)GetDataList(procedure);
         }
 
         private List<Product> GetProducts(string procedure, string condition)
         {
-            return (List<Product>)GetDataList(table, procedure, condition);
+            return (List<Product>)GetDataList(procedure, condition);
         }
 
         public void UpdateProduct(Product product)
@@ -277,7 +288,7 @@ namespace FormUI
 
         public void InsertProduct(Product newProduct)
         {
-            InsertData(table, newProduct);
+            InsertData(table, newProduct,"");
         }
         public List<Product> GetAll()
         {
