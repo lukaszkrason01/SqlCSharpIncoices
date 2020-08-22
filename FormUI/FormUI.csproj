@@ -40,6 +40,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,6 +58,13 @@
     <Compile Include="AddContractor.Designer.cs">
       <DependentUpon>AddContractor.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddProductToInvoiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddProductToInvoiceForm.Designer.cs">
+      <DependentUpon>AddProductToInvoiceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Company.cs" />
     <Compile Include="DashBoard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,14 +73,32 @@
     </Compile>
     <Compile Include="DataAccessMenager.cs" />
     <Compile Include="DataAccessPeople.cs" />
-    <Compile Include="Helper.cs" />
-    <Compile Include="IDataAccess.cs" />
-    <Compile Include="Invoice.cs">
+    <Compile Include="DetailsProductForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Invoice.Designer.cs">
-      <DependentUpon>Invoice.cs</DependentUpon>
+    <Compile Include="DetailsProductForm.Designer.cs">
+      <DependentUpon>DetailsProductForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helper.cs" />
+    <Compile Include="InvoiceDetailsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvoiceDetailsForm.Designer.cs">
+      <DependentUpon>InvoiceDetailsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InvoiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvoiceForm.Designer.cs">
+      <DependentUpon>InvoiceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ListViewColumnSorter.cs" />
     <Compile Include="People.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -82,14 +108,32 @@
     <Compile Include="ShowContractor.Designer.cs">
       <DependentUpon>ShowContractor.cs</DependentUpon>
     </Compile>
+    <Compile Include="ShowProducts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShowProducts.Designer.cs">
+      <DependentUpon>ShowProducts.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="AddContractor.resx">
       <DependentUpon>AddContractor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddProductToInvoiceForm.resx">
+      <DependentUpon>AddProductToInvoiceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DashBoard.resx">
       <DependentUpon>DashBoard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Invoice.resx">
-      <DependentUpon>Invoice.cs</DependentUpon>
+    <EmbeddedResource Include="DetailsProductForm.resx">
+      <DependentUpon>DetailsProductForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InvoiceDetailsForm.resx">
+      <DependentUpon>InvoiceDetailsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InvoiceForm.resx">
+      <DependentUpon>InvoiceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -99,9 +143,13 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="ShowContractor.resx">
       <DependentUpon>ShowContractor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShowProducts.resx">
+      <DependentUpon>ShowProducts.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -119,6 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

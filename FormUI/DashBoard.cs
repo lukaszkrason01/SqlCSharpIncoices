@@ -9,22 +9,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace FormUI
 {
     public partial class DashBoard : Form
     {
-        List<People> people = new List<People>();
-        int columnToSearch = 0;
+        private ListViewColumnSorter lvwColumnSorter;
+        List<Company> Companies { get; set; }
+        int column = 1;
+        Invoice theInvoice = null;
 
         public DashBoard()
         {
+
             InitializeComponent();
 
-            DataAccess db = new DataAccess();
+            lvwColumnSorter = new ListViewColumnSorter();
+            this.listView1.ListViewItemSorter = lvwColumnSorter;
 
-            people = db.GetPeople();
+            Companies = new DBAccesCompanies().GetAll();
             update();
+            this.listView1.Sort();
+        }
+        public DashBoard(Invoice invoice) : this()
+        {
+            this.theInvoice = invoice;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -41,11 +51,11 @@ namespace FormUI
         private void update()
         {
             listView1.Items.Clear();
-            if (people == null) return;
+            if (Companies == null) return;
 
-            foreach (var item in people)
+            foreach (var item in Companies)
             {
-                ListViewItem lvi = new ListViewItem(item.data());
+                ListViewItem lvi = new ListViewItem(item.GetData());
                 lvi.Tag = item;
                 listView1.Items.Add(lvi);
 
@@ -54,9 +64,7 @@ namespace FormUI
 
         private void search_Click(object sender, EventArgs e)
         {
-            DataAccess db = new DataAccess();
-
-            people = db.GetPeople(lasnNameTextBox.Text, columnToSearch);
+            Companies = DataAccessGetCompanies.selectByColumnNumber(column,  lasnNameTextBox.Text);
             update();
         }
 
@@ -67,9 +75,9 @@ namespace FormUI
 
         private void RTTextBox_KeyUp(object sender, KeyEventArgs e)
         {
-            DataAccess db = new DataAccess();
-            if (RTTextBox.Text == "") people = db.GetPeople();
-            else people = db.GetPeople(RTTextBox.Text, columnToSearch);
+
+            if (RTTextBox.Text == "") Companies = new DBAccesCompanies().GetAll();
+            else Companies = DataAccessGetCompanies.selectByColumnNumber(column, RTTextBox.Text);
             update();
         }
 
@@ -83,35 +91,42 @@ namespace FormUI
         private void NewProjectForm_FormClosed(object sender, System.Windows.Forms.FormClosedEventArgs e)
         {
             ////will run when new form is closed
-            DataAccess db = new DataAccess();
-            people = db.GetPeople();
+            Companies = new DBAccesCompanies().GetAll();
             update();
         }
 
         private void SortingListView(object sender, ColumnClickEventArgs e)
         {
-            columnToSearch = e.Column;
-            RTTextBox.Text = "";
-            DataAccess db = new DataAccess();
-            people = db.GetPeople();
-            update();
-            this.Text = e.Column.ToString();
-            /// <summary>
-            /// code from http://www.java2s.com/Tutorial/CSharp/0460__GUI-Windows-Forms/ListViewSorter.htm
-            /// </summary>
-            ListViewItemComparer sorter = listView1.ListViewItemSorter as ListViewItemComparer;
+            
+            column = e.Column + 1;
+            /*            RTTextBox.Text = "";
+                      DataAccess db = new DataAccess();
+                       Companies = db.getCompanies();
+                       update();
+                       this.Text = e.Column.ToString();*/
 
-            if (sorter == null)
+            // Determine if clicked column is already the column that is being sorted.
+            if (e.Column == lvwColumnSorter.SortColumn)
             {
-                sorter = new ListViewItemComparer(e.Column);
-                listView1.ListViewItemSorter = sorter;
+                // Reverse the current sort direction for this column.
+                if (lvwColumnSorter.Order ==System.Windows.Forms.SortOrder.Ascending)
+                {
+                    lvwColumnSorter.Order = System.Windows.Forms.SortOrder.Descending;
+                }
+                else
+                {
+                    lvwColumnSorter.Order = System.Windows.Forms.SortOrder.Ascending;
+                }
             }
             else
             {
-                sorter.Column = e.Column;
+                // Set the column number that is to be sorted; default to ascending.
+                lvwColumnSorter.SortColumn = e.Column;
+                lvwColumnSorter.Order = System.Windows.Forms.SortOrder.Ascending;
             }
 
-            listView1.Sort();
+            // Perform the sort with these new sort options.
+            this.listView1.Sort();
         }
 
         private void ShowContractorButton_Click(object sender, EventArgs e)
@@ -123,7 +138,7 @@ namespace FormUI
         {
             if (listView1.SelectedItems.Count > 0)
             {
-                People var3 = (People)listView1.SelectedItems[0].Tag;
+                Company var3 = (Company)listView1.SelectedItems[0].Tag;
                 ShowContractor form = new ShowContractor(var3.ID);
                 form.FormClosed += NewProjectForm_FormClosed;
                 form.Show();
@@ -132,12 +147,8 @@ namespace FormUI
 
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
-            showContractorForm();
-        }
-
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
+            theInvoice.CompanyID = ((Company)listView1.SelectedItems[0].Tag).ID;
+            this.Close();
         }
 
         private void showMyData_Click(object sender, EventArgs e)
@@ -149,71 +160,35 @@ namespace FormUI
 
         private void IssueInvoice_Click(object sender, EventArgs e)
         {
-
-        }
-    }
-
-    /// <summary>
-    /// code from http://www.java2s.com/Tutorial/CSharp/0460__GUI-Windows-Forms/ListViewSorter.htm
-    /// </summary>
-    public class ListViewItemComparer : IComparer
-    {
-        private int column;
-        private bool numeric = false;
-
-        public int Column
-        {
-            get { return column; }
-            set { column = value; }
-        }
-
-        public bool Numeric
-        {
-            get { return numeric; }
-            set { numeric = value; }
-        }
-
-        public ListViewItemComparer(int columnIndex)
-        {
-            Column = columnIndex;
-        }
-
-        public int Compare(object x, object y)
-        {
-            ListViewItem itemX = x as ListViewItem;
-            ListViewItem itemY = y as ListViewItem;
-
-            if (itemX == null && itemY == null)
-                return 0;
-            else if (itemX == null)
-                return -1;
-            else if (itemY == null)
-                return 1;
-
-            if (itemX == itemY) return 0;
-
-            if (Numeric)
+            if (listView1.SelectedItems.Count > 0)
             {
-                decimal itemXVal, itemYVal;
-
-                if (!Decimal.TryParse(itemX.SubItems[Column].Text, out itemXVal))
-                {
-                    itemXVal = 0;
-                }
-                if (!Decimal.TryParse(itemY.SubItems[Column].Text, out itemYVal))
-                {
-                    itemYVal = 0;
-                }
-
-                return Decimal.Compare(itemXVal, itemYVal);
+                Company var3 = (Company)listView1.SelectedItems[0].Tag;
+                InvoiceDetailsForm form = new InvoiceDetailsForm(null,var3);
+                form.Show();
             }
-            else
-            {
-                string itemXText = itemX.SubItems[Column].Text;
-                string itemYText = itemY.SubItems[Column].Text;
+        }
 
-                return String.Compare(itemXText, itemYText);
-            }
+        private void AddCompanyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void AddProductToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            DetailsProductForm form = new DetailsProductForm(0);
+            form.FormClosed += NewProjectForm_FormClosed;
+            form.Show();
+        }
+
+        private void przegladajToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            ShowProducts form = new ShowProducts();
+            form.Show();
+        }
+
+        private void showIvnoice_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

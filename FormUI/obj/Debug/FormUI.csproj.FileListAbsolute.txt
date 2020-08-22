@@ -13,4 +13,9 @@ D:\coding\c#\SQLDataAcces\FormUI\bin\Debug\Dapper.xml
 D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.csproj.CopyComplete
 D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.AddContractor.resources
 D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.ShowContractor.resources
-D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.Invoice.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.ShowProducts.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.DetailsProductForm.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.Form1.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.AddProductToInvoiceForm.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.InvoiceDetailsForm.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.InvoiceForm.resources

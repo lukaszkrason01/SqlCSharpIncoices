@@ -6,10 +6,6 @@ using System.Threading.Tasks;
 
 namespace FormUI
 {
-    enum Table
-    {
-        person
-    }
     class DataAccessMenager
     {
 
