@@ -218,6 +218,10 @@ namespace FormUI
         {
             return (List<Company>)GetData(table, procedure, condition);
         }
+        private List<Company> GetCompanies(string procedure, string[] conditions)
+        {
+            return (List<Company>)GetData(table, procedure, conditions);
+        }
 
         public void UpdateCompany(Company company)
         {
