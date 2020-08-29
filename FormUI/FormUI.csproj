@@ -71,7 +71,7 @@
     <Compile Include="DashBoard.Designer.cs">
       <DependentUpon>DashBoard.cs</DependentUpon>
     </Compile>
-    <Compile Include="DataAccessMenager.cs" />
+    <Compile Include="SampleDBOperations.cs" />
     <Compile Include="DataAccessPeople.cs" />
     <Compile Include="DetailsProductForm.cs">
       <SubType>Form</SubType>

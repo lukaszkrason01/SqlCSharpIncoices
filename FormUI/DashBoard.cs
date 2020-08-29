@@ -15,6 +15,7 @@ namespace FormUI
 {
     public partial class DashBoard : Form
     {
+        private SampleDBOperations db = SampleDBOperations.GetInstace();
         private ListViewColumnSorter lvwColumnSorter;
         List<Company> Companies { get; set; }
         int column = 1;
@@ -28,7 +29,7 @@ namespace FormUI
             lvwColumnSorter = new ListViewColumnSorter();
             this.listView1.ListViewItemSorter = lvwColumnSorter;
 
-            Companies = new DBAccesCompanies().GetAll();
+            Companies = db.CompaniesGetAll();
             update();
             this.listView1.Sort();
         }
@@ -64,7 +65,7 @@ namespace FormUI
 
         private void search_Click(object sender, EventArgs e)
         {
-            Companies = new DBAccesCompanies().GetByColumnNumber(column,  lasnNameTextBox.Text);
+            Companies = db.CompaniesGetByColumnNumber(column,  lasnNameTextBox.Text);
             update();
         }
 
@@ -76,8 +77,8 @@ namespace FormUI
         private void RTTextBox_KeyUp(object sender, KeyEventArgs e)
         {
 
-            if (RTTextBox.Text == "") Companies = new DBAccesCompanies().GetAll();
-            else Companies = new DBAccesCompanies().GetByColumnNumber(column, RTTextBox.Text);
+            if (RTTextBox.Text == "") Companies = db.CompaniesGetAll();
+            else Companies = db.CompaniesGetByColumnNumber(column+1, RTTextBox.Text);
             update();
         }
 
@@ -91,7 +92,7 @@ namespace FormUI
         private void NewProjectForm_FormClosed(object sender, System.Windows.Forms.FormClosedEventArgs e)
         {
             ////will run when new form is closed
-            Companies = new DBAccesCompanies().GetAll();
+            Companies = db.CompaniesGetAll();
             update();
         }
 
@@ -163,8 +164,8 @@ namespace FormUI
             if (listView1.SelectedItems.Count > 0)
             {
                 Company var3 = (Company)listView1.SelectedItems[0].Tag;
-                InvoiceDetailsForm form = new InvoiceDetailsForm(null,var3);
-                form.Show();
+              //  InvoiceDetailsForm form = new InvoiceDetailsForm(null,var3);
+             //   form.Show();
             }
         }
 

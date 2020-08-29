@@ -23,7 +23,12 @@ namespace FormUI
             return regZipCode.IsMatch(text);
         }
 
-        public static string PriceToString(string price)
+        public static string PriceValidate(string price)
+        {
+            return String.Format("{0:0.00}", decimal.Round(decimal.Parse(price), 2));
+        }
+
+/*        public static string PriceToString(string price)
         {
             return PriceToString(StringToPrice(price));
         }
@@ -43,7 +48,7 @@ namespace FormUI
             {
                 return 0;
             }
-        }
+        }*/
 
         public static string makeGoodNIP(string text)
         {
