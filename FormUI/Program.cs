@@ -17,7 +17,7 @@ namespace FormUI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new DashBoard());
-            Application.Run(new InvoiceForm());
+            Application.Run(new MainFom());
         }
     }
 }

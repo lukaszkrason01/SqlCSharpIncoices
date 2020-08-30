@@ -38,6 +38,17 @@ namespace FormUI
 
             return result + "}";
         }
+
+        public static string MekePracision(int precision)
+        {
+            if (precision == 0) return "1";
+            string result = "0,";
+            for (int i = 0; i < precision-1; i++)
+            {
+                result += 0;
+            }
+            return result + "1";
+        }
 /*        public static string PriceToString(string price)
         {
             return PriceToString(StringToPrice(price));
