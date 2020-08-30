@@ -28,6 +28,16 @@ namespace FormUI
             return String.Format("{0:0.00}", decimal.Round(decimal.Parse(price), 2));
         }
 
+        public static string MakeDecimalFormat(int precision)
+        {
+            string result = "{0:0.";
+            int i = 0;
+
+            while (precision > i++)
+            { result += "0"; }
+
+            return result + "}";
+        }
 /*        public static string PriceToString(string price)
         {
             return PriceToString(StringToPrice(price));
