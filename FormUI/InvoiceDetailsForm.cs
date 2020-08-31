@@ -92,7 +92,18 @@ namespace FormUI
                 DisableChanges();
             }
 
+            UpdateMyInfo();
             UpdateListView();
+        }
+
+        private void UpdateMyInfo()
+        {
+            Dictionary<string,string> myInfo = SettingsForm.GetCompanyInfo();
+
+            MyName.Text = myInfo["[MyName]"];
+            MyAdres1.Text = myInfo["[MyStreet]"];
+            MyAdres2.Text = myInfo["[MyZipCode]"] + " " + myInfo["[MyCity]"];
+            MyNip.Text = "NIP:"+myInfo["[MyNip]"];
         }
 
         private void SetDataFromDB()

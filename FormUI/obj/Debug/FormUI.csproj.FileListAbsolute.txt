@@ -20,3 +20,4 @@ D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.InvoiceForm.resources
 D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.CompaniesForm.resources
 D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.MainFom.resources
 D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.SettingsForm.resources
+D:\coding\c#\SQLDataAcces\FormUI\obj\Debug\FormUI.EditJMForm.resources

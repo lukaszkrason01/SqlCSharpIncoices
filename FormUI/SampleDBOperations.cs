@@ -262,6 +262,14 @@ namespace FormUI
             return daJMs.GetItem("dbo.jm_getByID @ID"
                 , new { ID = id });
         }
+
+        public void JMPutItem(JM unit)
+        {
+            string procedure = ("dbo.jm_putItem");
+            GetPropertiesToUpdate(ref procedure, unit);
+            daJMs.PutItem(procedure, unit);
+        }
+
         //  Invoices
         ////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///
@@ -314,6 +322,13 @@ namespace FormUI
         public Dictionary<int,string> PaymentMethodsGetDictionary()
         {
             return PaymentMethodsGetAll().ToDictionary(x => x.ID, x => x.Name);
+        }
+
+        public void PaymentMethodsPutItem(PaymentMethod pm)
+        {
+            string procedure = "dbo.paymentmethod_put";
+            GetPropertiesToUpdate(ref procedure, pm);
+            daPaymentMethods.PutItem(procedure, pm);
         }
 
         //  Invoice Items

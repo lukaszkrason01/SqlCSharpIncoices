@@ -123,6 +123,25 @@ select * from jm
 where ID = @id
 end
 
+create procedure jm_PutItem
+@id int,
+@name varchar(20),
+@precision int
+as
+begin
+	if @id = 0
+	begin
+		insert into jm
+		values(@name, @precision)
+	end
+	else
+	begin
+		update jm
+		set Name = @name , Precision = @precision
+		where id= @id
+	end
+end
+
 create procedure vatrate_getAll
 as
 begin
@@ -133,6 +152,24 @@ create procedure PaymentMethod_getAll
 as
 begin
 select * from PaymentMethod
+end
+
+create procedure paymentmethod_put
+	@id int,
+	@name varchar(20)
+as
+begin
+	if @id = 0
+	begin
+		insert into paymentmethod
+		values(@name)
+	end
+	else
+	begin
+		update paymentmethod
+		set Name = @name
+		where ID = @id
+	end
 end
 
 create procedure State_getAll
