@@ -1,0 +1,98 @@
+USE [Sample]
+GO
+
+/****** Object:  Table [dbo].[People]    Script Date: 15.08.2020 16:55:33 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[People](
+	[ID] [int] NOT NULL,
+	[FirstName] [nvarchar](50) NULL,
+	[LastName] [nvarchar](50) NULL,
+	[Email] [nvarchar](50) NULL,
+	[Phone] [nvarchar](20) NULL,
+ CONSTRAINT [PK_People] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+Create database Faktury;
+drop database Faktury;
+
+ CREATE TABLE People(
+	ID   INT identity(1,1) PRIMARY KEY,
+	FirstName varchar(20) not null,
+	LastName varchar(20) not null,
+	Email varchar(20),
+	Phone varchar(20)
+);
+
+insert into People(FirstName, LastName, Email , Phone)
+values ('adam','adam','adam@p.p','123456789')
+
+select * from People;
+
+ CREATE TABLE CUSTOMERS(
+   ID   INT			identity(1,1),
+   NAME VARCHAR (20)     NOT NULL,
+   AGE  INT              NOT NULL,
+   ADDRESS  CHAR (25) ,
+   SALARY   DECIMAL (18, 2),       
+   PRIMARY KEY (ID)
+);
+
+DESC CUSTOMERS;
+
+insert into CUSTOMERS(NAME,AGE,ADDRESS,SALARY)
+VALUES ('Ramesh', 32, 'Ahmedabad', 2000.00 );
+INSERT INTO CUSTOMERS (ID,NAME,AGE,ADDRESS,SALARY)
+VALUES (2, 'Khilan', 25, 'Delhi', 1500.00 );
+
+INSERT INTO CUSTOMERS (ID,NAME,AGE,ADDRESS,SALARY)
+VALUES (3, 'kaushik', 23, 'Kota', 2000.00 );
+
+INSERT INTO CUSTOMERS (ID,NAME,AGE,ADDRESS,SALARY)
+VALUES (4, 'Chaitali', 25, 'Mumbai', 6500.00 );
+
+INSERT INTO CUSTOMERS (ID,NAME,AGE,ADDRESS,SALARY)
+VALUES (5, 'Hardik', 27, 'Bhopal', 8500.00 );
+
+INSERT INTO CUSTOMERS (ID,NAME,AGE,ADDRESS,SALARY)
+VALUES (6, 'Komal', 22, 'MP', 4500.00 );
+
+INSERT INTO CUSTOMERS 
+VALUES (7, 'Muffy', 24, 'Indore', 10000.00 );
+
+Select * from CUSTOMERS
+
+SELECT ID, NAME, SALARY 
+FROM CUSTOMERS
+WHERE SALARY > 2000;
+
+SELECT ID, NAME, SALARY 
+FROM CUSTOMERS
+WHERE SALARY > 2000 AND age < 25;
+
+SELECT ID, NAME, SALARY 
+FROM CUSTOMERS
+WHERE SALARY > 2000 OR age < 25;
+
+SELECT ID, NAME, SALARY 
+FROM CUSTOMERS
+WHERE NAME = 'Hardik';
+
+UPDATE CUSTOMERS
+SET ADDRESS = 'Pune'
+WHERE ID = 6;
+
+UPDATE CUSTOMERS
+SET ADDRESS = 'Pune', SALARY = 1000.00;
+
+
+
+DROP TABLE People;
